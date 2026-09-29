@@ -55,6 +55,7 @@ header.top .wrap{padding-top:12px;padding-bottom:0}
 .tank{height:8px;background:rgba(0,0,0,.14);overflow:hidden;margin-top:4px}
 .tank i{display:block;height:100%;width:0;background:#000;transition:width .6s ease}
 nav.tabs{display:flex;margin-top:10px}
+nav.tabs button[hidden]{display:none}
 nav.tabs button{flex:1;background:transparent;border:0;color:#000;opacity:.6;padding:12px 8px;font-weight:700;font-size:1rem;border-bottom:4px solid transparent;margin-bottom:-4px;cursor:pointer;min-height:48px}
 nav.tabs button[aria-selected="true"]{opacity:1;border-bottom-color:var(--red)}
 
@@ -147,8 +148,8 @@ dt{color:var(--muted);font-size:.9rem;font-weight:600} dd{margin:0;font-weight:5
 <main class="wrap">
   <div id="noDb" class="banner" hidden></div>
   <div class="card" id="cfg" hidden>
-    <h2>Clave de acceso</h2>
-    <p style="margin:0 0 12px;color:var(--muted)">Ingresala una sola vez en este celular. Es la clave que está en el script de la planilla.</p>
+    <h2>Clave para cargar partes</h2>
+    <p style="margin:0 0 12px;color:var(--muted)">Para ver los partes no hace falta. Ingresala una sola vez en el celular desde el que cargás.</p>
     <input id="cfgClave" type="password" autocomplete="current-password">
     <div class="actions"><button class="btn primary" id="cfgGuardar" type="button">Entrar</button></div>
   </div>
@@ -199,6 +200,7 @@ dt{color:var(--muted);font-size:.9rem;font-weight:600} dd{margin:0;font-weight:5
       <div><label for="fBuscar">Buscar</label><input id="fBuscar" placeholder="N° o nombre"></div>
       <button class="btn ghost" id="btnCsv" type="button">Descargar CSV</button>
       <button class="btn ghost" id="btnRecargar" type="button">Actualizar</button>
+      <button class="btn ghost" id="btnSalir" type="button">Ingresar para cargar</button>
     </div>
     <div class="resumen" id="resumen"></div>
     <div class="list" id="lista"></div>
@@ -252,19 +254,29 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
   }
   async function cargar(){
     if(API_URL.startsWith("PEGAR")){ banner("Falta configurar la URL de Apps Script en index.html."); return; }
-    if(!clave){ $("cfg").hidden=false; return; }
     try{
       const r = await fetch(`${API_URL}?clave=${encodeURIComponent(clave)}&t=${Date.now()}`);
       const j = await r.json();
-      if(!j.ok && j.error==="clave"){ $("cfg").hidden=false; banner("La clave no es correcta."); return; }
       if(!j.ok) throw new Error(j.error);
-      partes = j.partes; banner(""); $("cfg").hidden=true;
+      if(clave && j.rol!=="carga"){ banner("La clave no es correcta."); clave=""; try{ localStorage.removeItem("agua_clave"); }catch{} $("cfg").hidden=false; }
+      partes = j.partes; if(j.rol==="carga"){ banner(""); $("cfg").hidden=true; }
+      aplicarRol(j.rol);
       try{ localStorage.setItem("agua_cache",JSON.stringify(partes)); }catch{}
       render();
     }catch{
       banner("Sin conexión con la planilla. Se muestran los últimos datos descargados.");
     }
   }
+  function aplicarRol(rol){
+    const lectura = rol==="lectura";
+    try{ localStorage.setItem("agua_rol",rol||""); }catch{}
+    $("tabCargar").hidden=lectura; $("dlgEdit").hidden=lectura;
+    $("btnSalir").textContent = lectura ? "Ingresar para cargar" : "Salir";
+    if(lectura && !$("secCargar").hidden) showTab("registro");
+  }
+  $("btnSalir").onclick=()=>{
+    if(!clave){ $("cfgClave").value=""; $("cfg").hidden=false; $("cfgClave").focus(); window.scrollTo({top:0}); return; }
+    if(!confirm("¿Salir del modo carga en este dispositivo?")) return; clave=""; try{ localStorage.removeItem("agua_clave"); localStorage.removeItem("agua_rol"); localStorage.removeItem("agua_cache"); }catch{} aplicarRol("lectura"); };
   $("cfgGuardar").onclick=()=>{ clave=$("cfgClave").value.trim(); try{ localStorage.setItem("agua_clave",clave); }catch{} cargar(); };
   $("btnRecargar").onclick=cargar;
 
@@ -414,7 +426,9 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
 
   // ---------- Inicio ----------
   try{ partes=JSON.parse(localStorage.getItem("agua_cache")||"[]"); }catch{}
-  limpiar(); render(); cargar();
+  limpiar(); render();
+  if(!clave) aplicarRol("lectura");
+  cargar();
   if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 })();
 </script>
