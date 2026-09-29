@@ -331,7 +331,12 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
       if(!fotoB64) return;
       const url=await girar90("data:image/jpeg;base64,"+fotoB64);
       fotoB64=url.split(",")[1]; pintarFoto(url); setStatus("Foto girada. Tocá Guardar parte para que quede así.");
-    }catch{ setStatus("No se pudo girar la foto. Probá de nuevo.","err"); }
+    }catch(err){
+      const m=String(err&&err.message||err);
+      setStatus(m==="accion" ? "No se pudo girar: el script de Google está desactualizado. Publicá una nueva versión en Apps Script."
+        : m==="clave" ? "No se pudo girar: la clave no es correcta."
+        : "No se pudo girar la foto ("+m+").","err");
+    }
     finally{ b.disabled=false; }
   };
   $("fileCam").onchange=onFile; $("fileGal").onchange=onFile;
