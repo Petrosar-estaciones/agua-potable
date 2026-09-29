@@ -180,6 +180,9 @@ dt{color:var(--muted);font-size:.9rem;font-weight:600} dd{margin:0;font-weight:5
           <div><label for="numero">N° de parte *</label><input id="numero" inputmode="numeric" placeholder="00080356" required></div>
           <div><label for="fecha">Fecha *</label><input id="fecha" type="date" required></div>
           <div class="full litros"><label for="litros">Litros de agua potable *</label><input id="litros" inputmode="numeric" placeholder="18000"></div>
+          <div class="full"><span class="lbl" id="lblOrigen">Origen *</span>
+            <div class="chips" role="radiogroup" aria-labelledby="lblOrigen" id="origenes"></div>
+          </div>
           <div class="full"><span class="lbl" id="lblDestino">Destino *</span>
             <div class="chips" role="radiogroup" aria-labelledby="lblDestino" id="destinos"></div>
           </div>
@@ -200,6 +203,7 @@ dt{color:var(--muted);font-size:.9rem;font-weight:600} dd{margin:0;font-weight:5
   <section id="secRegistro" role="tabpanel" hidden>
     <div class="filters">
       <div><label for="fMes">Mes</label><select id="fMes"></select></div>
+      <div><label for="fOrig">Origen</label><select id="fOrig"><option value="">Todos los orígenes</option></select></div>
       <div><label for="fDest">Destino</label><select id="fDest"><option value="">Todos los destinos</option></select></div>
       <div><label for="fBuscar">Buscar</label><input id="fBuscar" placeholder="N° o nombre"></div>
       <button class="btn ghost" id="btnCsv" type="button">Descargar CSV</button>
@@ -228,6 +232,10 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
   const FIELDS = ["numero","fecha","litros","recibe"];
   const DESTINOS = ["Cerro Dragón","Resero","Anticlinal Grande","Tres Picos"];
   $("destinos").innerHTML = DESTINOS.map((d,i)=>`<input type="radio" name="destino" id="dest${i}" value="${d}"><label for="dest${i}">${d}</label>`).join("");
+  const ORIGENES = ["PAE CD","STO"];
+  $("origenes").innerHTML = ORIGENES.map((d,i)=>`<input type="radio" name="origen" id="orig${i}" value="${d}"><label for="orig${i}">${d}</label>`).join("");
+  const getOrigen = () => (document.querySelector('input[name="origen"]:checked')||{}).value || "";
+  const setOrigen = v => document.querySelectorAll('input[name="origen"]').forEach(r=>r.checked=(r.value===v));
   const getDestino = () => (document.querySelector('input[name="destino"]:checked')||{}).value || "";
   const setDestino = v => document.querySelectorAll('input[name="destino"]').forEach(r=>r.checked=(r.value===v));
 
@@ -346,13 +354,13 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
   function setStatus(msg,kind){ const s=$("status"); s.textContent=msg; s.className="status"+(kind?" "+kind:""); }
   function limpiar(){
     editingId=null; fotoB64=null; fotoId=null; pintarFoto(null);
-    FIELDS.forEach(f=>$(f).value=""); setDestino("");
+    FIELDS.forEach(f=>$(f).value=""); setDestino(""); setOrigen("");
     $("fecha").value=hoy(); $("btnBorrar").hidden=true; $("formTitle").textContent="Foto del parte"; setStatus("");
   }
   $("btnLimpiar").onclick=()=>{ limpiar(); window.scrollTo({top:0}); };
   function cargarEnForm(p){
     limpiar(); editingId=p.id;
-    FIELDS.forEach(f=>{ if(p[f]!=null) $(f).value=p[f]; }); setDestino(p.destino||"");
+    FIELDS.forEach(f=>{ if(p[f]!=null) $(f).value=p[f]; }); setDestino(p.destino||""); setOrigen(p.origen||"");
     fotoId=p.fotoId||null; pintarFoto(fotoId?fotoUrl(fotoId):null);
     $("btnBorrar").hidden=false; $("formTitle").textContent="Foto del parte N° "+p.numero; showTab("cargar");
   }
@@ -360,11 +368,12 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
   $("form").onsubmit=async e=>{
     e.preventDefault();
     if(!clave){ $("cfg").hidden=false; setStatus("Primero ingresá la clave de acceso.","err"); return; }
-    const d={}; FIELDS.forEach(f=>d[f]=$(f).value.trim()); d.destino=getDestino();
+    const d={}; FIELDS.forEach(f=>d[f]=$(f).value.trim()); d.destino=getDestino(); d.origen=getOrigen();
     const id=idDe(d.numero);
     if(!id){ setStatus("Falta el número de parte.","err"); $("numero").focus(); return; }
     if(!d.fecha){ setStatus("Falta la fecha.","err"); $("fecha").focus(); return; }
     if(!d.litros){ setStatus("Faltan los litros.","err"); $("litros").focus(); return; }
+    if(!d.origen){ setStatus("Elegí el origen.","err"); $("orig0").focus(); return; }
     if(!d.destino){ setStatus("Elegí el destino.","err"); $("dest0").focus(); return; }
     d.litros=Number(String(d.litros).replace(/\./g,"").replace(",","."));
     if(isNaN(d.litros)){ setStatus("Los litros tienen que ser un número.","err"); $("litros").focus(); return; }
@@ -393,6 +402,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
   DESTINOS.forEach(d=>{ const o=document.createElement("option"); o.value=d; o.textContent=d; $("fDest").appendChild(o); });
   let mesElegido=hoy().slice(0,7);
   $("fMes").onchange=()=>{ mesElegido=$("fMes").value; render(); };
+  ORIGENES.forEach(d=>{ const o=document.createElement("option"); o.value=d; o.textContent=d; $("fOrig").appendChild(o); });
+  $("fOrig").onchange=render;
   $("fDest").onchange=render; $("fBuscar").oninput=render;
   function llenarMeses(){
     const meses=[...new Set([hoy().slice(0,7),...partes.map(p=>mesDe(p.fecha)).filter(Boolean)])].sort().reverse();
@@ -400,8 +411,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
     $("fMes").value=mesElegido;
   }
   function filtrados(){
-    const mes=$("fMes").value, dest=$("fDest").value, q=$("fBuscar").value.trim().toLowerCase();
-    return partes.filter(p=>(!mes||mesDe(p.fecha)===mes) && (!dest||p.destino===dest) && (!q||[p.numero,p.recibe,p.destino].join(" ").toLowerCase().includes(q)))
+    const mes=$("fMes").value, dest=$("fDest").value, orig=$("fOrig").value, q=$("fBuscar").value.trim().toLowerCase();
+    return partes.filter(p=>(!mes||mesDe(p.fecha)===mes) && (!dest||p.destino===dest) && (!orig||p.origen===orig) && (!q||[p.numero,p.recibe,p.destino,p.origen].join(" ").toLowerCase().includes(q)))
       .sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||"")||(b.numero||"").localeCompare(a.numero||""));
   }
   function render(){
@@ -428,7 +439,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
       if(p.fecha!==ult){ ult=p.fecha; html+=`<div class="day-group">${esc(diaDe(p.fecha))} ${esc(fmtFecha(p.fecha))}</div>`; }
       const th=p.fotoId?`<img class="thumb" src="${fotoUrl(p.fotoId,200)}" alt="" loading="lazy">`:`<div class="thumb nophoto">Sin foto</div>`;
       html+=`<button class="row" data-id="${esc(p.id)}">${th}
-        <div><div class="num">N° ${esc(p.numero)}</div><div class="meta">${esc(p.destino||"Sin destino")}</div><div class="meta">${p.recibe?"Recibe: "+esc(p.recibe):""}</div></div>
+        <div><div class="num">N° ${esc(p.numero)}</div><div class="meta">${esc(p.origen||"Sin origen")} → ${esc(p.destino||"Sin destino")}</div><div class="meta">${p.recibe?"Recibe: "+esc(p.recibe):""}</div></div>
         <div class="lts">${fmtL(p.litros)}</div></button>`;
     }
     el.innerHTML=html;
@@ -440,7 +451,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
   function abrir(id){
     const p=partes.find(x=>x.id===id); if(!p) return; abiertoId=id;
     $("dlgTitle").textContent="Parte N° "+p.numero;
-    const filas=[["Fecha",`${diaDe(p.fecha)} ${fmtFecha(p.fecha)}`],["Litros",fmtL(p.litros)],["Destino",p.destino],["Recibe / firma",p.recibe]].filter(r=>r[1]);
+    const filas=[["Fecha",`${diaDe(p.fecha)} ${fmtFecha(p.fecha)}`],["Litros",fmtL(p.litros)],["Origen",p.origen],["Destino",p.destino],["Recibe / firma",p.recibe]].filter(r=>r[1]);
     $("dlgBody").innerHTML=(p.fotoId?`<div class="visor" id="visor"><a href="${fotoLink(p.fotoId)}" target="_blank" rel="noopener"><img id="visorImg" src="${fotoUrl(p.fotoId)}" alt="Foto del parte ${esc(p.numero)}"></a></div>`:`<div class="banner" style="margin-top:0">Este parte no tiene foto de respaldo.</div>`)
       +`<dl>${filas.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`;
     giro=0; $("dlgGirar").hidden=!p.fotoId;
@@ -461,12 +472,12 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
   // ---------- CSV ----------
   $("btnCsv").onclick=()=>{
     const list=filtrados();
-    const cols=[["numero","N° parte"],["fecha","Fecha"],["dia","Día"],["litros","Litros"],["destino","Destino"],["recibe","Recibe / firma"],["foto","Foto"]];
+    const cols=[["numero","N° parte"],["fecha","Fecha"],["dia","Día"],["litros","Litros"],["origen","Origen"],["destino","Destino"],["recibe","Recibe / firma"],["foto","Foto"]];
     const cell=v=>`"${String(v??"").replace(/"/g,'""')}"`;
     const lines=[cols.map(c=>cell(c[1])).join(";")];
     list.forEach(p=>lines.push(cols.map(([k])=>cell(k==="fecha"?fmtFecha(p.fecha):k==="dia"?diaDe(p.fecha):k==="foto"?(p.fotoId?fotoLink(p.fotoId):""):p[k])).join(";")));
     const blob=new Blob(["\ufeff"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
-    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`agua-potable-${$("fMes").value||"todos"}${$("fDest").value?"-"+$("fDest").value.replace(/\s+/g,"-"):""}.csv`;
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`agua-potable-${$("fMes").value||"todos"}${$("fOrig").value?"-"+$("fOrig").value.replace(/\s+/g,"-"):""}${$("fDest").value?"-"+$("fDest").value.replace(/\s+/g,"-"):""}.csv`;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   };
 
