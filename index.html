@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agua potable – partes</title>
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Agua potable">
+<meta name="theme-color" content="#FDD849">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F4EE; --panel:#FFFFFF; --ink:#111111; --muted:#5E5A4F; --line:#DDD8C8;
+  --yellow:#FDD849; --yellow-soft:#FEF4C7; --red:#FF2100; --red-ink:#D11B00; --black:#000;
+  --btn-bg:#000; --btn-fg:#FDD849; --chip-bg:#000; --chip-fg:#FDD849;
+  --ok:#1F7A3E;
+  --sans:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#141310; --panel:#1E1C17; --ink:#F3F0E6; --muted:#A8A290; --line:#35322A;
+    --yellow-soft:#2D2812; --red-ink:#FF5A3D; --btn-bg:#FDD849; --btn-fg:#000; --chip-bg:#FDD849; --chip-fg:#000; --ok:#6FCB8C;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141310; --panel:#1E1C17; --ink:#F3F0E6; --muted:#A8A290; --line:#35322A;
+  --yellow-soft:#2D2812; --red-ink:#FF5A3D; --btn-bg:#FDD849; --btn-fg:#000; --chip-bg:#FDD849; --chip-fg:#000; --ok:#6FCB8C;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 56px}
+
+/* Encabezado de marca */
+header.top{background:var(--yellow);color:#000;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;border-bottom:4px solid #000}
+header.top .wrap{padding-top:12px;padding-bottom:0}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{width:52px;height:52px;display:block;flex:none}
+.brand h1{font-family:var(--cond);font-weight:700;font-size:1.9rem;line-height:1;margin:0;letter-spacing:-.005em}
+.brand p{margin:2px 0 0;font-size:.85rem;font-weight:500}
+.gauge{margin-top:12px}
+.gauge-row{display:flex;justify-content:space-between;align-items:baseline;font-size:.9rem;font-weight:500}
+.gauge-row b{font-family:var(--cond);font-size:1.6rem;font-weight:700}
+.tank{height:8px;background:rgba(0,0,0,.14);overflow:hidden;margin-top:4px}
+.tank i{display:block;height:100%;width:0;background:#000;transition:width .6s ease}
+nav.tabs{display:flex;margin-top:10px}
+nav.tabs button{flex:1;background:transparent;border:0;color:#000;opacity:.6;padding:12px 8px;font-weight:700;font-size:1rem;border-bottom:4px solid transparent;margin-bottom:-4px;cursor:pointer;min-height:48px}
+nav.tabs button[aria-selected="true"]{opacity:1;border-bottom-color:var(--red)}
+
+section[hidden]{display:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;margin-top:14px}
+.card h2{font-family:var(--cond);font-size:1.3rem;margin:0 0 12px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid .full{grid-column:1/-1}
+@media (max-width:480px){.grid{grid-template-columns:1fr}}
+label,.lbl{display:block;font-size:.9rem;color:var(--muted);font-weight:600;margin-bottom:5px}
+input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);min-height:50px;font-size:17px}
+input:focus,select:focus,textarea:focus{border-color:var(--ink);outline:none;box-shadow:0 0 0 3px var(--yellow)}
+.litros input{font-family:var(--cond);font-size:1.7rem;font-weight:700;letter-spacing:.01em}
+.chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.chips label{margin:0;display:flex;align-items:center;justify-content:center;min-height:56px;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);font-weight:700;font-size:1rem;cursor:pointer;text-align:center;padding:8px}
+.chips input{position:absolute;opacity:0;width:1px;height:1px}
+.chips input:checked + label{background:var(--chip-bg);border-color:var(--chip-bg);color:var(--chip-fg)}
+.chips input:focus-visible + label{outline:3px solid var(--red);outline-offset:2px}
+
+.photo{border:2px dashed var(--ink);background:var(--yellow-soft);border-radius:6px;min-height:200px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;cursor:pointer;text-align:center;padding:20px;margin:0;color:var(--ink)}
+.photo svg{width:44px;height:44px}
+.photo strong{font-size:1.15rem;color:var(--ink)}
+.photo span{font-size:.9rem;color:var(--muted);font-weight:500}
+.photo img{max-width:100%;max-height:440px;border-radius:4px;display:block}
+.photo.has{border-style:solid;border-color:var(--line);background:var(--panel);padding:8px}
+.photo-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+input[type=file]{display:none}
+
+.btn{border:0;border-radius:6px;padding:12px 18px;font-weight:700;cursor:pointer;min-height:50px;font-size:1rem;display:inline-flex;align-items:center;justify-content:center}
+.btn.primary{background:var(--btn-bg);color:var(--btn-fg)}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn.danger{background:transparent;color:var(--red-ink);border:1.5px solid var(--red-ink)}
+.btn:disabled{opacity:.55;cursor:progress}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+@media (max-width:480px){
+  .actions .btn{flex:1 1 auto}
+  #btnGuardar{flex-basis:100%;order:-1;min-height:56px;font-size:1.1rem}
+}
+.status{margin-top:12px;font-size:.95rem;min-height:1.2em;font-weight:600}
+.status.err{color:var(--red-ink)} .status.ok{color:var(--ok)}
+
+.filters{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:16px}
+.filters > div{flex:1;min-width:150px}
+.resumen{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:14px}
+.resumen div{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--yellow);border-radius:6px;padding:10px 12px}
+.resumen span{display:block;font-size:.85rem;color:var(--muted);font-weight:600}
+.resumen b{font-family:var(--cond);font-size:1.45rem}
+.list{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.row{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px;cursor:pointer;text-align:left;width:100%}
+.row:hover{border-color:var(--ink)}
+.thumb{width:64px;height:48px;border-radius:4px;object-fit:cover;background:var(--yellow-soft);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700}
+.nophoto{background:transparent;border:1.5px dashed var(--red-ink);color:var(--red-ink)}
+.row .num{font-family:var(--cond);font-weight:700;font-size:1.15rem}
+.row .meta{font-size:.88rem;color:var(--muted)}
+.row .lts{font-family:var(--cond);font-weight:700;font-size:1.35rem;text-align:right;white-space:nowrap}
+.empty{padding:32px 16px;text-align:center;color:var(--muted)}
+.day-group{font-size:.85rem;color:var(--muted);margin:14px 2px 2px;font-weight:700;text-transform:capitalize}
+
+dialog{border:0;border-radius:8px;padding:0;max-width:720px;width:calc(100% - 20px);background:var(--panel);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.65)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--yellow);color:#000;border-radius:8px 8px 0 0}
+.dlg-head h3{margin:0;font-family:var(--cond);font-size:1.4rem}
+.dlg-body{padding:16px;max-height:72vh;overflow:auto}
+.dlg-body img{width:100%;border-radius:4px;border:1px solid var(--line)}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 14px;margin:14px 0 0}
+dt{color:var(--muted);font-size:.9rem;font-weight:600} dd{margin:0;font-weight:500}
+.close{background:transparent;border:0;font-size:1.8rem;line-height:1;cursor:pointer;padding:4px 8px;color:#000;min-width:44px;min-height:44px}
+.banner{background:var(--yellow-soft);border-left:4px solid var(--red);border-radius:4px;padding:12px;margin-top:16px;font-size:.95rem}
+@media (prefers-reduced-motion:reduce){.tank i{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <img src="logo.png" alt="Logo">
+      <div><h1>Agua potable</h1><p>Partes de entrega</p></div>
+    </div>
+    <div class="gauge" aria-live="polite">
+      <div class="gauge-row"><span id="gaugeTxt">Litros descargados este mes</span><b id="gaugeNum">0 L</b></div>
+      <div class="tank" aria-hidden="true"><i id="gaugeBar"></i></div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" id="tabCargar" aria-selected="true" aria-controls="secCargar">Cargar parte</button>
+      <button role="tab" id="tabRegistro" aria-selected="false" aria-controls="secRegistro">Registro</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="noDb" class="banner" hidden></div>
+  <div class="card" id="cfg" hidden>
+    <h2>Clave de acceso</h2>
+    <p style="margin:0 0 12px;color:var(--muted)">Ingresala una sola vez en este celular. Es la clave que está en el script de la planilla.</p>
+    <input id="cfgClave" type="password" autocomplete="current-password">
+    <div class="actions"><button class="btn primary" id="cfgGuardar" type="button">Entrar</button></div>
+  </div>
+
+  <!-- CARGAR -->
+  <section id="secCargar" role="tabpanel">
+    <form id="form" autocomplete="off" novalidate>
+      <div class="card">
+        <h2 id="formTitle">Foto del parte</h2>
+        <label class="photo" id="photoBox" for="fileCam">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.8l1.4-2h6.6l1.4 2h1.8A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.8"/></svg><strong>Sacar foto del parte</strong>
+          <span>Tocá acá para usar la cámara. La foto queda guardada como respaldo.</span>
+        </label>
+        <input type="file" id="fileCam" accept="image/*" capture="environment">
+        <input type="file" id="fileGal" accept="image/*">
+        <div class="photo-actions">
+          <label for="fileGal" class="btn ghost" style="margin:0;font-size:1rem;color:var(--ink)">Elegir de la galería</label>
+          <button type="button" class="btn ghost" id="quitarFoto" hidden>Quitar foto</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Datos del parte</h2>
+        <div class="grid">
+          <div><label for="numero">N° de parte *</label><input id="numero" inputmode="numeric" placeholder="00080356" required></div>
+          <div><label for="fecha">Fecha *</label><input id="fecha" type="date" required></div>
+          <div class="full litros"><label for="litros">Litros de agua potable *</label><input id="litros" inputmode="numeric" placeholder="18000"></div>
+          <div class="full"><span class="lbl" id="lblDestino">Destino *</span>
+            <div class="chips" role="radiogroup" aria-labelledby="lblDestino" id="destinos"></div>
+          </div>
+          <div class="full"><label for="recibe">Recibe / firma</label><input id="recibe" list="dlPersonas" placeholder="Apellido, nombre"></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn danger" id="btnBorrar" hidden>Borrar parte</button>
+        <button type="button" class="btn ghost" id="btnLimpiar">Nuevo parte</button>
+        <button type="submit" class="btn primary" id="btnGuardar">Guardar parte</button>
+      </div>
+      <div class="status" id="status" role="status"></div>
+    </form>
+  </section>
+
+  <!-- REGISTRO -->
+  <section id="secRegistro" role="tabpanel" hidden>
+    <div class="filters">
+      <div><label for="fMes">Mes</label><input type="month" id="fMes"></div>
+      <div><label for="fBuscar">Buscar</label><input id="fBuscar" placeholder="N° o nombre"></div>
+      <button class="btn ghost" id="btnCsv" type="button">Descargar CSV</button>
+      <button class="btn ghost" id="btnRecargar" type="button">Actualizar</button>
+    </div>
+    <div class="resumen" id="resumen"></div>
+    <div class="list" id="lista"></div>
+  </section>
+</main>
+
+<datalist id="dlPersonas"></datalist>
+
+<dialog id="dlg">
+  <div class="dlg-head"><h3 id="dlgTitle"></h3><button class="close" id="dlgClose" aria-label="Cerrar">×</button></div>
+  <div class="dlg-body" id="dlgBody"></div>
+  <div class="actions" style="padding:0 16px 16px"><button class="btn primary" id="dlgEdit">Editar</button></div>
+</dialog>
+
+<script>
+// URL de la implementación de Apps Script (planilla Partes agua potable)
+const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSKIPjMy6rbXxuPrALM0gEZvHD8nVfkq3VsVW3JNYV9ylYG/exec";
+
+(() => {
+  const $ = id => document.getElementById(id);
+  const FIELDS = ["numero","fecha","litros","recibe"];
+  const DESTINOS = ["Cerro Dragón","Resero","Anticlinal Grande","Tres Picos"];
+  $("destinos").innerHTML = DESTINOS.map((d,i)=>`<input type="radio" name="destino" id="dest${i}" value="${d}"><label for="dest${i}">${d}</label>`).join("");
+  const getDestino = () => (document.querySelector('input[name="destino"]:checked')||{}).value || "";
+  const setDestino = v => document.querySelectorAll('input[name="destino"]').forEach(r=>r.checked=(r.value===v));
+
+  let clave = ""; try{ clave = localStorage.getItem("agua_clave") || ""; }catch{}
+  let partes = [], editingId = null, fotoB64 = null, fotoId = null, fotoPreviewUrl = null;
+
+  const fmtL = n => (Number(n)||0).toLocaleString("es-AR") + " L";
+  const hoy = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+  const mesDe = f => (f||"").slice(0,7);
+  const fmtFecha = f => { if(!f) return ""; const [y,m,d]=f.split("-"); return `${d}/${m}/${y}`; };
+  const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  const diaDe = f => { if(!f) return ""; const [y,m,d]=f.split("-").map(Number); return dias[new Date(y,m-1,d).getDay()]; };
+  const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  const nombreMes = ym => { const [y,m]=ym.split("-"); return `${MESES[Number(m)-1]} ${y}`; };
+  const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const idDe = num => String(num).replace(/\D/g,"").replace(/^0+/,"") || null;
+  const fotoUrl = (id, w=1600) => `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${w}`;
+  const fotoLink = id => `https://drive.google.com/file/d/${encodeURIComponent(id)}/view`;
+
+  function banner(msg){ const b=$("noDb"); b.textContent=msg||""; b.hidden=!msg; }
+
+  // ---------- API ----------
+  async function api(body){
+    const r = await fetch(API_URL,{method:"POST",body:JSON.stringify({clave,...body})});
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error||"error");
+    return j;
+  }
+  async function cargar(){
+    if(API_URL.startsWith("PEGAR")){ banner("Falta configurar la URL de Apps Script en index.html."); return; }
+    if(!clave){ $("cfg").hidden=false; return; }
+    try{
+      const r = await fetch(`${API_URL}?clave=${encodeURIComponent(clave)}&t=${Date.now()}`);
+      const j = await r.json();
+      if(!j.ok && j.error==="clave"){ $("cfg").hidden=false; banner("La clave no es correcta."); return; }
+      if(!j.ok) throw new Error(j.error);
+      partes = j.partes; banner(""); $("cfg").hidden=true;
+      try{ localStorage.setItem("agua_cache",JSON.stringify(partes)); }catch{}
+      render();
+    }catch{
+      banner("Sin conexión con la planilla. Se muestran los últimos datos descargados.");
+    }
+  }
+  $("cfgGuardar").onclick=()=>{ clave=$("cfgClave").value.trim(); try{ localStorage.setItem("agua_clave",clave); }catch{} cargar(); };
+  $("btnRecargar").onclick=cargar;
+
+  // ---------- Tabs ----------
+  function showTab(which){
+    const c = which==="cargar";
+    $("tabCargar").setAttribute("aria-selected",c); $("tabRegistro").setAttribute("aria-selected",!c);
+    $("secCargar").hidden=!c; $("secRegistro").hidden=c; window.scrollTo({top:0});
+  }
+  $("tabCargar").onclick=()=>showTab("cargar");
+  $("tabRegistro").onclick=()=>{ showTab("registro"); cargar(); };
+
+  // ---------- Foto ----------
+  const CAM = document.querySelector("#photoBox svg").outerHTML;
+  async function comprimir(file){
+    const img = await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=URL.createObjectURL(file); });
+    const max=1600; let w=img.naturalWidth, h=img.naturalHeight;
+    const k=Math.min(1,max/Math.max(w,h)); w=Math.round(w*k); h=Math.round(h*k);
+    const c=document.createElement("canvas"); c.width=w; c.height=h;
+    c.getContext("2d").drawImage(img,0,0,w,h); URL.revokeObjectURL(img.src);
+    return c.toDataURL("image/jpeg",0.8);
+  }
+  function pintarFoto(url){
+    const box=$("photoBox");
+    if(url){ box.classList.add("has"); box.innerHTML=`<img src="${esc(url)}" alt="Foto del parte">`; $("quitarFoto").hidden=false; }
+    else { box.classList.remove("has"); box.innerHTML=`${CAM}<strong>Sacar foto del parte</strong><span>Tocá acá para usar la cámara. La foto queda guardada como respaldo.</span>`; $("quitarFoto").hidden=true; }
+  }
+  async function onFile(e){
+    const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return;
+    setStatus("Preparando foto…");
+    try{ const url=await comprimir(f); fotoB64=url.split(",")[1]; pintarFoto(url); setStatus(""); }
+    catch{ setStatus("No se pudo leer la imagen. Probá con otra foto.","err"); }
+  }
+  $("fileCam").onchange=onFile; $("fileGal").onchange=onFile;
+  $("quitarFoto").onclick=()=>{ fotoB64=null; fotoId=null; pintarFoto(null); };
+
+  // ---------- Formulario ----------
+  function setStatus(msg,kind){ const s=$("status"); s.textContent=msg; s.className="status"+(kind?" "+kind:""); }
+  function limpiar(){
+    editingId=null; fotoB64=null; fotoId=null; pintarFoto(null);
+    FIELDS.forEach(f=>$(f).value=""); setDestino("");
+    $("fecha").value=hoy(); $("btnBorrar").hidden=true; $("formTitle").textContent="Foto del parte"; setStatus("");
+  }
+  $("btnLimpiar").onclick=()=>{ limpiar(); window.scrollTo({top:0}); };
+  function cargarEnForm(p){
+    limpiar(); editingId=p.id;
+    FIELDS.forEach(f=>{ if(p[f]!=null) $(f).value=p[f]; }); setDestino(p.destino||"");
+    fotoId=p.fotoId||null; pintarFoto(fotoId?fotoUrl(fotoId):null);
+    $("btnBorrar").hidden=false; $("formTitle").textContent="Foto del parte N° "+p.numero; showTab("cargar");
+  }
+
+  $("form").onsubmit=async e=>{
+    e.preventDefault();
+    if(!clave){ $("cfg").hidden=false; setStatus("Primero ingresá la clave de acceso.","err"); return; }
+    const d={}; FIELDS.forEach(f=>d[f]=$(f).value.trim()); d.destino=getDestino();
+    const id=idDe(d.numero);
+    if(!id){ setStatus("Falta el número de parte.","err"); $("numero").focus(); return; }
+    if(!d.fecha){ setStatus("Falta la fecha.","err"); $("fecha").focus(); return; }
+    if(!d.litros){ setStatus("Faltan los litros.","err"); $("litros").focus(); return; }
+    if(!d.destino){ setStatus("Elegí el destino.","err"); $("dest0").focus(); return; }
+    d.litros=Number(String(d.litros).replace(/\./g,"").replace(",","."));
+    if(isNaN(d.litros)){ setStatus("Los litros tienen que ser un número.","err"); $("litros").focus(); return; }
+    if(!fotoB64 && !fotoId && !confirm("El parte no tiene foto. ¿Guardarlo igual?")) return;
+    if(id!==editingId && partes.some(p=>p.id===id) && !confirm(`Ya existe el parte N° ${id.padStart(8,"0")}. ¿Reemplazarlo?`)) return;
+    d.fotoId=fotoId;
+    const btn=$("btnGuardar"); btn.disabled=true; setStatus(fotoB64?"Subiendo foto y guardando…":"Guardando…");
+    try{
+      await api({accion:"guardar",parte:d,foto:fotoB64,idAnterior:editingId});
+      limpiar(); setStatus(`Parte N° ${id.padStart(8,"0")} guardado.`,"ok"); window.scrollTo({top:0});
+      cargar();
+    }catch(err){
+      setStatus(err.message==="clave"?"La clave no es correcta.":"No se pudo guardar. Revisá la señal y tocá Guardar de nuevo (los datos siguen cargados).","err");
+    }finally{ btn.disabled=false; }
+  };
+
+  $("btnBorrar").onclick=async()=>{
+    if(!editingId) return;
+    const p=partes.find(x=>x.id===editingId);
+    if(!confirm(`¿Borrar el parte N° ${p?.numero||editingId}? No se puede deshacer.`)) return;
+    try{ await api({accion:"borrar",id:editingId}); limpiar(); setStatus("Parte borrado.","ok"); cargar(); }
+    catch{ setStatus("No se pudo borrar. Probá de nuevo.","err"); }
+  };
+
+  // ---------- Registro ----------
+  $("fMes").value=hoy().slice(0,7);
+  $("fMes").oninput=render; $("fBuscar").oninput=render;
+  function filtrados(){
+    const mes=$("fMes").value, q=$("fBuscar").value.trim().toLowerCase();
+    return partes.filter(p=>(!mes||mesDe(p.fecha)===mes) && (!q||[p.numero,p.recibe,p.destino].join(" ").toLowerCase().includes(q)))
+      .sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||"")||(b.numero||"").localeCompare(a.numero||""));
+  }
+  function render(){
+    const mesAct=hoy().slice(0,7);
+    const delMes=partes.filter(p=>mesDe(p.fecha)===mesAct);
+    const tot=delMes.reduce((s,p)=>s+(Number(p.litros)||0),0);
+    $("gaugeNum").textContent=fmtL(tot);
+    $("gaugeTxt").textContent=`${delMes.length} ${delMes.length===1?"parte":"partes"} en ${nombreMes(mesAct)}`;
+    const meses=[...new Set(partes.map(p=>mesDe(p.fecha)).filter(Boolean))];
+    const maxMes=Math.max(tot,...meses.map(m=>partes.filter(p=>mesDe(p.fecha)===m).reduce((s,p)=>s+(Number(p.litros)||0),0)),1);
+    $("gaugeBar").style.width=Math.round(tot/maxMes*100)+"%";
+    const pers=new Set(); partes.forEach(p=>p.recibe&&pers.add(p.recibe));
+    $("dlPersonas").innerHTML=[...pers].map(n=>`<option value="${esc(n)}">`).join("");
+
+    const list=filtrados(), el=$("lista");
+    const porDest={}; list.forEach(p=>{ const k=p.destino||"Sin destino"; porDest[k]=(porDest[k]||0)+(Number(p.litros)||0); });
+    $("resumen").innerHTML=Object.entries(porDest).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div><span>${esc(k)}</span><b>${fmtL(v)}</b></div>`).join("");
+    if(!list.length){ el.innerHTML=`<div class="empty">${partes.length?"No hay partes que coincidan con el filtro.":"Todavía no hay partes cargados. Usá la pestaña Cargar parte para el primero."}</div>`; return; }
+    const totF=list.reduce((s,p)=>s+(Number(p.litros)||0),0);
+    let html=`<div class="meta" style="color:var(--muted);font-size:.9rem;font-weight:600">${list.length} ${list.length===1?"parte":"partes"}, ${fmtL(totF)}</div>`;
+    let ult=null;
+    for(const p of list){
+      if(p.fecha!==ult){ ult=p.fecha; html+=`<div class="day-group">${esc(diaDe(p.fecha))} ${esc(fmtFecha(p.fecha))}</div>`; }
+      const th=p.fotoId?`<img class="thumb" src="${fotoUrl(p.fotoId,200)}" alt="" loading="lazy">`:`<div class="thumb nophoto">Sin foto</div>`;
+      html+=`<button class="row" data-id="${esc(p.id)}">${th}
+        <div><div class="num">N° ${esc(p.numero)}</div><div class="meta">${esc(p.destino||"Sin destino")}</div><div class="meta">${p.recibe?"Recibe: "+esc(p.recibe):""}</div></div>
+        <div class="lts">${fmtL(p.litros)}</div></button>`;
+    }
+    el.innerHTML=html;
+    el.querySelectorAll(".row").forEach(b=>b.onclick=()=>abrir(b.dataset.id));
+  }
+
+  // ---------- Detalle ----------
+  let abiertoId=null;
+  function abrir(id){
+    const p=partes.find(x=>x.id===id); if(!p) return; abiertoId=id;
+    $("dlgTitle").textContent="Parte N° "+p.numero;
+    const filas=[["Fecha",`${diaDe(p.fecha)} ${fmtFecha(p.fecha)}`],["Litros",fmtL(p.litros)],["Destino",p.destino],["Recibe / firma",p.recibe]].filter(r=>r[1]);
+    $("dlgBody").innerHTML=(p.fotoId?`<a href="${fotoLink(p.fotoId)}" target="_blank" rel="noopener"><img src="${fotoUrl(p.fotoId)}" alt="Foto del parte ${esc(p.numero)}"></a>`:`<div class="banner" style="margin-top:0">Este parte no tiene foto de respaldo.</div>`)
+      +`<dl>${filas.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`;
+    $("dlg").showModal();
+  }
+  $("dlgClose").onclick=()=>$("dlg").close();
+  $("dlg").addEventListener("click",e=>{ if(e.target===$("dlg")) $("dlg").close(); });
+  $("dlgEdit").onclick=()=>{ const p=partes.find(x=>x.id===abiertoId); $("dlg").close(); if(p) cargarEnForm(p); };
+
+  // ---------- CSV ----------
+  $("btnCsv").onclick=()=>{
+    const list=filtrados();
+    const cols=[["numero","N° parte"],["fecha","Fecha"],["dia","Día"],["litros","Litros"],["destino","Destino"],["recibe","Recibe / firma"],["foto","Foto"]];
+    const cell=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+    const lines=[cols.map(c=>cell(c[1])).join(";")];
+    list.forEach(p=>lines.push(cols.map(([k])=>cell(k==="fecha"?fmtFecha(p.fecha):k==="dia"?diaDe(p.fecha):k==="foto"?(p.fotoId?fotoLink(p.fotoId):""):p[k])).join(";")));
+    const blob=new Blob(["\ufeff"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`agua-potable-${$("fMes").value||"todos"}.csv`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  };
+
+  // ---------- Inicio ----------
+  try{ partes=JSON.parse(localStorage.getItem("agua_cache")||"[]"); }catch{}
+  limpiar(); render(); cargar();
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+})();
+</script>
+</body>
+</html>
