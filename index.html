@@ -97,8 +97,26 @@ input[type=file]{display:none}
 .status{margin-top:12px;font-size:.95rem;min-height:1.2em;font-weight:600}
 .status.err{color:var(--red-ink)} .status.ok{color:var(--ok)}
 
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.fbar{display:flex;gap:8px;align-items:stretch;margin-top:16px;flex-wrap:wrap}
+.mesbar{flex:1 1 240px;display:flex;align-items:center;justify-content:space-between;background:var(--yellow);color:#000;border:2px solid #000;border-radius:6px;min-height:52px}
+.mesbar span{font-family:var(--cond);font-weight:700;font-size:1.35rem;text-align:center;flex:1}
+.mesarrow{background:transparent;border:0;color:#000;min-width:52px;min-height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.mesarrow:disabled{opacity:.25;cursor:default}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pl{border:1.5px solid var(--line);border-radius:999px;padding:8px 16px;min-height:42px;background:var(--panel);color:var(--ink);font-weight:600;font-size:.95rem;cursor:pointer}
+.pl[aria-pressed="true"]{background:var(--chip-bg);border-color:var(--chip-bg);color:var(--chip-fg)}
+.fbar .pl{border-radius:6px;min-height:52px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn.sm{min-height:42px;padding:8px 14px;font-size:.92rem}
 .filters{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:16px}
-.filters > div{flex:1;min-width:150px}
+.filters{display:grid !important;grid-template-columns:1.3fr 1fr 1fr 1.2fr;gap:10px}
+.filters > div{min-width:0}
+@media (max-width:600px){.filters{grid-template-columns:1fr 1fr}.filters > div:first-child,.filters > div:last-child{grid-column:1/-1}}
+.filters select,.filters input{font-family:var(--sans);font-size:15px;font-weight:600;min-height:46px;padding:10px 30px 10px 12px;letter-spacing:.005em}
+.filters input{padding-right:12px;font-weight:500}
+.filters select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23777' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;cursor:pointer}
+.filters label{font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
 .resumen{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:14px}
 .resumen div{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--yellow);border-radius:6px;padding:10px 12px}
 .resumen span{display:block;font-size:.85rem;color:var(--muted);font-weight:600}
@@ -203,12 +221,14 @@ dt{color:var(--muted);font-size:.9rem;font-weight:600} dd{margin:0;font-weight:5
   <section id="secRegistro" role="tabpanel" hidden>
     <div class="filters">
       <div><label for="fMes">Mes</label><select id="fMes"></select></div>
-      <div><label for="fOrig">Origen</label><select id="fOrig"><option value="">Todos los orígenes</option></select></div>
-      <div><label for="fDest">Destino</label><select id="fDest"><option value="">Todos los destinos</option></select></div>
+      <div><label for="fOrig">Origen</label><select id="fOrig"><option value="">Todos</option></select></div>
+      <div><label for="fDest">Destino</label><select id="fDest"><option value="">Todos</option></select></div>
       <div><label for="fBuscar">Buscar</label><input id="fBuscar" placeholder="N° o nombre"></div>
-      <button class="btn ghost" id="btnCsv" type="button">Descargar CSV</button>
-      <button class="btn ghost" id="btnRecargar" type="button">Actualizar</button>
-      <button class="btn ghost" id="btnSalir" type="button">Ingresar para cargar</button>
+    </div>
+    <div class="tools">
+      <button class="btn ghost sm" id="btnCsv" type="button">Descargar CSV</button>
+      <button class="btn ghost sm" id="btnRecargar" type="button">Actualizar</button>
+      <button class="btn ghost sm" id="btnSalir" type="button">Ingresar para cargar</button>
     </div>
     <div class="resumen" id="resumen"></div>
     <div class="list" id="lista"></div>
@@ -400,14 +420,13 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
 
   // ---------- Registro ----------
   DESTINOS.forEach(d=>{ const o=document.createElement("option"); o.value=d; o.textContent=d; $("fDest").appendChild(o); });
+  ORIGENES.forEach(d=>{ const o=document.createElement("option"); o.value=d; o.textContent=d; $("fOrig").appendChild(o); });
   let mesElegido=hoy().slice(0,7);
   $("fMes").onchange=()=>{ mesElegido=$("fMes").value; render(); };
-  ORIGENES.forEach(d=>{ const o=document.createElement("option"); o.value=d; o.textContent=d; $("fOrig").appendChild(o); });
-  $("fOrig").onchange=render;
-  $("fDest").onchange=render; $("fBuscar").oninput=render;
+  $("fOrig").onchange=render; $("fDest").onchange=render; $("fBuscar").oninput=render;
   function llenarMeses(){
     const meses=[...new Set([hoy().slice(0,7),...partes.map(p=>mesDe(p.fecha)).filter(Boolean)])].sort().reverse();
-    $("fMes").innerHTML=`<option value="">Todos los meses</option>`+meses.map(m=>`<option value="${m}">${nombreMes(m).replace(/^./,c=>c.toUpperCase())}</option>`).join("");
+    $("fMes").innerHTML=`<option value="">Todos</option>`+meses.map(m=>`<option value="${m}">${nombreMes(m).replace(/^./,c=>c.toUpperCase())}</option>`).join("");
     $("fMes").value=mesElegido;
   }
   function filtrados(){
