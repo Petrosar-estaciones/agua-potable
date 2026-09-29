@@ -119,6 +119,8 @@ dialog::backdrop{background:rgba(0,0,0,.65)}
 .dlg-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--yellow);color:#000;border-radius:8px 8px 0 0}
 .dlg-head h3{margin:0;font-family:var(--cond);font-size:1.4rem}
 .dlg-body{padding:16px;max-height:72vh;overflow:auto}
+.visor{display:flex;align-items:center;justify-content:center;overflow:hidden}
+.visor img{transition:transform .25s ease}
 .dlg-body img{width:100%;border-radius:4px;border:1px solid var(--line)}
 dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 14px;margin:14px 0 0}
 dt{color:var(--muted);font-size:.9rem;font-weight:600} dd{margin:0;font-weight:500}
@@ -167,6 +169,7 @@ dt{color:var(--muted);font-size:.9rem;font-weight:600} dd{margin:0;font-weight:5
         <input type="file" id="fileGal" accept="image/*">
         <div class="photo-actions">
           <label for="fileGal" class="btn ghost" style="margin:0;font-size:1rem;color:var(--ink)">Elegir de la galería</label>
+          <button type="button" class="btn ghost" id="girarFoto" hidden>Girar foto ↻</button>
           <button type="button" class="btn ghost" id="quitarFoto" hidden>Quitar foto</button>
         </div>
       </div>
@@ -196,7 +199,8 @@ dt{color:var(--muted);font-size:.9rem;font-weight:600} dd{margin:0;font-weight:5
   <!-- REGISTRO -->
   <section id="secRegistro" role="tabpanel" hidden>
     <div class="filters">
-      <div><label for="fMes">Mes</label><input type="month" id="fMes"></div>
+      <div><label for="fMes">Mes</label><select id="fMes"></select></div>
+      <div><label for="fDest">Destino</label><select id="fDest"><option value="">Todos los destinos</option></select></div>
       <div><label for="fBuscar">Buscar</label><input id="fBuscar" placeholder="N° o nombre"></div>
       <button class="btn ghost" id="btnCsv" type="button">Descargar CSV</button>
       <button class="btn ghost" id="btnRecargar" type="button">Actualizar</button>
@@ -212,7 +216,7 @@ dt{color:var(--muted);font-size:.9rem;font-weight:600} dd{margin:0;font-weight:5
 <dialog id="dlg">
   <div class="dlg-head"><h3 id="dlgTitle"></h3><button class="close" id="dlgClose" aria-label="Cerrar">×</button></div>
   <div class="dlg-body" id="dlgBody"></div>
-  <div class="actions" style="padding:0 16px 16px"><button class="btn primary" id="dlgEdit">Editar</button></div>
+  <div class="actions" style="padding:0 16px 16px"><button class="btn ghost" id="dlgGirar" type="button" hidden>Girar ↻</button><button class="btn primary" id="dlgEdit">Editar</button></div>
 </dialog>
 
 <script>
@@ -301,8 +305,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
   }
   function pintarFoto(url){
     const box=$("photoBox");
-    if(url){ box.classList.add("has"); box.innerHTML=`<img src="${esc(url)}" alt="Foto del parte">`; $("quitarFoto").hidden=false; }
-    else { box.classList.remove("has"); box.innerHTML=`${CAM}<strong>Sacar foto del parte</strong><span>Tocá acá para usar la cámara. La foto queda guardada como respaldo.</span>`; $("quitarFoto").hidden=true; }
+    if(url){ box.classList.add("has"); box.innerHTML=`<img src="${esc(url)}" alt="Foto del parte">`; $("quitarFoto").hidden=false; $("girarFoto").hidden=false; }
+    else { box.classList.remove("has"); box.innerHTML=`${CAM}<strong>Sacar foto del parte</strong><span>Tocá acá para usar la cámara. La foto queda guardada como respaldo.</span>`; $("quitarFoto").hidden=true; $("girarFoto").hidden=true; }
   }
   async function onFile(e){
     const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return;
@@ -310,6 +314,26 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
     try{ const url=await comprimir(f); fotoB64=url.split(",")[1]; pintarFoto(url); setStatus(""); }
     catch{ setStatus("No se pudo leer la imagen. Probá con otra foto.","err"); }
   }
+  async function girar90(dataUrl){
+    const img = await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=dataUrl; });
+    const c=document.createElement("canvas"); c.width=img.naturalHeight; c.height=img.naturalWidth;
+    const x=c.getContext("2d"); x.translate(c.width,0); x.rotate(Math.PI/2); x.drawImage(img,0,0);
+    return c.toDataURL("image/jpeg",0.85);
+  }
+  $("girarFoto").onclick=async()=>{
+    const b=$("girarFoto"); b.disabled=true;
+    try{
+      if(!fotoB64 && fotoId){
+        setStatus("Descargando foto para girarla…");
+        const r=await api({accion:"foto",id:fotoId});
+        fotoB64=r.foto;
+      }
+      if(!fotoB64) return;
+      const url=await girar90("data:image/jpeg;base64,"+fotoB64);
+      fotoB64=url.split(",")[1]; pintarFoto(url); setStatus("Foto girada. Tocá Guardar parte para que quede así.");
+    }catch{ setStatus("No se pudo girar la foto. Probá de nuevo.","err"); }
+    finally{ b.disabled=false; }
+  };
   $("fileCam").onchange=onFile; $("fileGal").onchange=onFile;
   $("quitarFoto").onclick=()=>{ fotoB64=null; fotoId=null; pintarFoto(null); };
 
@@ -361,11 +385,18 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
   };
 
   // ---------- Registro ----------
-  $("fMes").value=hoy().slice(0,7);
-  $("fMes").oninput=render; $("fBuscar").oninput=render;
+  DESTINOS.forEach(d=>{ const o=document.createElement("option"); o.value=d; o.textContent=d; $("fDest").appendChild(o); });
+  let mesElegido=hoy().slice(0,7);
+  $("fMes").onchange=()=>{ mesElegido=$("fMes").value; render(); };
+  $("fDest").onchange=render; $("fBuscar").oninput=render;
+  function llenarMeses(){
+    const meses=[...new Set([hoy().slice(0,7),...partes.map(p=>mesDe(p.fecha)).filter(Boolean)])].sort().reverse();
+    $("fMes").innerHTML=`<option value="">Todos los meses</option>`+meses.map(m=>`<option value="${m}">${nombreMes(m).replace(/^./,c=>c.toUpperCase())}</option>`).join("");
+    $("fMes").value=mesElegido;
+  }
   function filtrados(){
-    const mes=$("fMes").value, q=$("fBuscar").value.trim().toLowerCase();
-    return partes.filter(p=>(!mes||mesDe(p.fecha)===mes) && (!q||[p.numero,p.recibe,p.destino].join(" ").toLowerCase().includes(q)))
+    const mes=$("fMes").value, dest=$("fDest").value, q=$("fBuscar").value.trim().toLowerCase();
+    return partes.filter(p=>(!mes||mesDe(p.fecha)===mes) && (!dest||p.destino===dest) && (!q||[p.numero,p.recibe,p.destino].join(" ").toLowerCase().includes(q)))
       .sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||"")||(b.numero||"").localeCompare(a.numero||""));
   }
   function render(){
@@ -380,6 +411,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
     const pers=new Set(); partes.forEach(p=>p.recibe&&pers.add(p.recibe));
     $("dlPersonas").innerHTML=[...pers].map(n=>`<option value="${esc(n)}">`).join("");
 
+    llenarMeses();
     const list=filtrados(), el=$("lista");
     const porDest={}; list.forEach(p=>{ const k=p.destino||"Sin destino"; porDest[k]=(porDest[k]||0)+(Number(p.litros)||0); });
     $("resumen").innerHTML=Object.entries(porDest).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div><span>${esc(k)}</span><b>${fmtL(v)}</b></div>`).join("");
@@ -404,10 +436,19 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
     const p=partes.find(x=>x.id===id); if(!p) return; abiertoId=id;
     $("dlgTitle").textContent="Parte N° "+p.numero;
     const filas=[["Fecha",`${diaDe(p.fecha)} ${fmtFecha(p.fecha)}`],["Litros",fmtL(p.litros)],["Destino",p.destino],["Recibe / firma",p.recibe]].filter(r=>r[1]);
-    $("dlgBody").innerHTML=(p.fotoId?`<a href="${fotoLink(p.fotoId)}" target="_blank" rel="noopener"><img src="${fotoUrl(p.fotoId)}" alt="Foto del parte ${esc(p.numero)}"></a>`:`<div class="banner" style="margin-top:0">Este parte no tiene foto de respaldo.</div>`)
+    $("dlgBody").innerHTML=(p.fotoId?`<div class="visor" id="visor"><a href="${fotoLink(p.fotoId)}" target="_blank" rel="noopener"><img id="visorImg" src="${fotoUrl(p.fotoId)}" alt="Foto del parte ${esc(p.numero)}"></a></div>`:`<div class="banner" style="margin-top:0">Este parte no tiene foto de respaldo.</div>`)
       +`<dl>${filas.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`;
+    giro=0; $("dlgGirar").hidden=!p.fotoId;
     $("dlg").showModal();
   }
+  let giro=0;
+  $("dlgGirar").onclick=()=>{
+    const img=$("visorImg"), v=$("visor"); if(!img) return;
+    giro=(giro+90)%360;
+    const w=img.clientWidth, h=img.clientHeight, W=v.clientWidth;
+    if(giro%180){ const sc=Math.min(1,W/h); img.style.transform=`rotate(${giro}deg) scale(${sc})`; v.style.height=(w*sc)+"px"; }
+    else { img.style.transform=`rotate(${giro}deg)`; v.style.height=""; }
+  };
   $("dlgClose").onclick=()=>$("dlg").close();
   $("dlg").addEventListener("click",e=>{ if(e.target===$("dlg")) $("dlg").close(); });
   $("dlgEdit").onclick=()=>{ const p=partes.find(x=>x.id===abiertoId); $("dlg").close(); if(p) cargarEnForm(p); };
@@ -420,7 +461,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyGSohowNGX4KpiGGl_bGSK
     const lines=[cols.map(c=>cell(c[1])).join(";")];
     list.forEach(p=>lines.push(cols.map(([k])=>cell(k==="fecha"?fmtFecha(p.fecha):k==="dia"?diaDe(p.fecha):k==="foto"?(p.fotoId?fotoLink(p.fotoId):""):p[k])).join(";")));
     const blob=new Blob(["\ufeff"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
-    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`agua-potable-${$("fMes").value||"todos"}.csv`;
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`agua-potable-${$("fMes").value||"todos"}${$("fDest").value?"-"+$("fDest").value.replace(/\s+/g,"-"):""}.csv`;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   };
 
